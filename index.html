@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Giip</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        .animate-pulse-slow {
+    animation: pulse-slow 3s ease-in-out infinite;
+}
+@keyframes pulse-slow {
+    0% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.1); }
+    100% { opacity: 0.3; transform: scale(1); }
+}
+        .gradient-text {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .parallax {
+            transition: transform 0.3s ease-out;
+        }
+        .card-glow {
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.2);
+        }
+        .card-glow:hover {
+            box-shadow: 0 0 30px rgba(78, 205, 196, 0.5);
+            transform: translateY(-5px);
+        }
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #111827;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+        .timeline-item {
+            opacity: 0;
+            transform: translateX(var(--translate-x));
+            position: relative;
+        }
+        .timeline-item.right {
+            --translate-x: 30px;
+        }
+        .timeline-item.left {
+            --translate-x: -30px;
+        }
+        .timeline-item.visible {
+            opacity: 1;
+            transform: translateX(0);
+            transition: all 0.8s ease-out;
+        }
+        .timeline-icon {
+            background: #4ECDC4;
+            color: #111827;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 1rem;
+        }
+        .progress-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 0;
+            background: linear-gradient(to bottom, #4ECDC4, #FF6B6B);
+            transition: height 0.3s ease;
+        }
+        .hobby-item {
+            transition: all 0.5s ease;
+        }
+        .hobby-item:hover {
+            transform: scale(1.1);
+            background: linear-gradient(45deg, #4ECDC4, #FF6B6B);
+            color: white;
+        }
+        .profile-container {
+            position: relative;
+            transition: all 0.5s ease;
+        }
+        .profile-container:hover {
+            transform: rotate(360deg);
+        }
+        .profile-container::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(78, 205, 196, 0.3), transparent);
+            z-index: -1;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 0.2; }
+            100% { transform: scale(1); opacity: 0.5; }
+        }
+        @media (max-width: 640px) {
+            .timeline-item {
+                margin-left: 2rem;
+                margin-right: 1rem;
+                --translate-x: -20px !important;
+            }
+            .timeline-item .absolute {
+                left: -1rem;
+            }
+            .timeline-item .bg-gray-700 {
+                padding: 1rem;
+            }
+            .timeline-icon {
+                width: 1.5rem;
+                height: 1.5rem;
+                font-size: 0.75rem;
+            }
+            .progress-bar {
+                width: 3px;
+            }
+        }
+        @media (min-width: 641px) and (max-width: 1024px) {
+            .timeline-item {
+                margin-left: 2.5rem;
+                margin-right: 1.5rem;
+            }
+            .timeline-item .bg-gray-700 {
+                padding: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen overflow-x-hidden">
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="animate-pulse text-2xl sm:text-3xl gradient-text flex items-center space-x-2">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Loading Portfolio...</span>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 bg-gray-900/90 backdrop-blur-md shadow-lg">
+        <div class="container mx-auto px-4 sm:px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="text-2xl sm:text-3xl font-extrabold gradient-text tracking-tight">Ghifari Atallah</div>
+                <div class="hidden md:flex space-x-10">
+                    <a href="#home" class="relative text-lg font-medium hover:text-blue-400 transition after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-blue-400 after:transition-all after:duration-300 hover:after:w-full">Home</a>
+                    <a href="#projects" class="relative text-lg font-medium hover:text-blue-400 transition after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-blue-400 after:transition-all after:duration-300 hover:after:w-full">Projects</a>
+                    <a href="#experience" class="relative text-lg font-medium hover:text-blue-400 transition after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-blue-400 after:transition-all after:duration-300 hover:after:w-full">Experience</a>
+                    <a href="#about" class="relative text-lg font-medium hover:text-blue-400 transition after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-blue-400 after:transition-all after:duration-300 hover:after:w-full">About</a>
+                    <a href="#contact" class="relative text-lg font-medium hover:text-blue-400 transition after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-blue-400 after:transition-all after:duration-300 hover:after:w-full">Contact</a>
+                </div>
+                <button id="mobile-menu-btn" class="md:hidden focus:outline-none">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="mobile-menu" class="hidden md:hidden mt-4 space-y-3">
+                <a href="#home" class="block px-4 py-2 text-lg hover:bg-gray-800 rounded transition">Home</a>
+                <a href="#projects" class="block px-4 py-2 text-lg hover:bg-gray-800 rounded transition">Projects</a>
+                <a href="#experience" class="block px-4 py-2 text-lg hover:bg-gray-800 rounded transition">Experience</a>
+                <a href="#about" class="block px-4 py-2 text-lg hover:bg-gray-800 rounded transition">About</a>
+                <a href="#contact" class="block px-4 py-2 text-lg hover:bg-gray-800 rounded transition">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="h-screen flex items-center justify-center relative overflow-hidden">
+        <div id="canvas-container" class="absolute inset-0 z-0"></div>
+        <div class="container mx-auto px-4 sm:px-6 z-10 text-center parallax">
+            <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 gradient-text animate__animated animate__fadeInDown animate__delay-1s">Welcome to My Portfolio</h1>
+            <p class="text-lg sm:text-xl md:text-2xl mb-8 text-gray-200 max-w-3xl mx-auto animate__animated animate__fadeInUp animate__delay-1s">C'mon Lets See my Portofolio.</p>
+            <a href="#projects" class="inline-block bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white px-8 sm:px-10 py-3 rounded-full transition text-lg font-semibold shadow-lg animate__animated animate__pulse animate__delay-2s">C'mon Discover My Project</a>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects" class="py-24 bg-gradient-to-b from-gray-800 to-gray-900">
+        <div class="container mx-auto px-4 sm:px-6">
+            <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-16 text-center gradient-text animate__animated animate__zoomIn">My Projects</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Project Card 1 -->
+                <div class="bg-gray-700 rounded-xl overflow-hidden card-glow transform transition-all duration-500 group">
+                    <div class="h-56 relative overflow-hidden">
+                        <img src="Screenshot 2025-06-05 at 08.19.23.png" 
+                             alt="E-Payroll Service" 
+                             class="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl md:text-2xl font-bold mb-3 gradient-text">E-Payroll Service</h3>
+                        <p class="text-gray-300 text-sm md:text-base leading-relaxed">A comprehensive payroll system for employee salary management, tax calculations, and deductions, streamlining HR processes.</p>
+                    </div>
+                </div>
+                <!-- Project Card 2 -->
+                <div class="bg-gray-700 rounded-xl overflow-hidden card-glow transform transition-all duration-500 group">
+                    <div class="h-56 relative overflow-hidden">
+                        <img src="Screenshot 2025-06-05 at 08.28.17.png" 
+                             alt="E-Commerce" 
+                             class="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl md:text-2xl font-bold mb-3 gradient-text">E-Commerce Platform</h3>
+                        <p class="text-gray-300 text-sm md:text-base leading-relaxed">An online marketplace for electronics, household appliances, and office equipment, designed for seamless user experience.</p>
+                    </div>
+                </div>
+                <!-- Project Card 3 -->
+                <div class="bg-gray-700 rounded-xl overflow-hidden card-glow transform transition-all duration-500 group">
+                    <div class="h-56 relative overflow-hidden">
+                        <img src="Screenshot 2025-06-05 at 08.37.20.png" 
+                             alt="Todo-List" 
+                             class="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl md:text-2xl font-bold mb-3 gradient-text">Todo-List App</h3>
+                        <p class="text-gray-300 text-sm md:text-base leading-relaxed">A simple and efficient task management tool to organize daily activities with ease.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience Section -->
+    <section id="experience" class="py-24 bg-gray-900 relative">
+        <div class="container mx-auto px-4 sm:px-6">
+            <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-16 text-center gradient-text animate__animated animate__zoomIn">My Journey</h2>
+            <div class="max-w-5xl mx-auto relative">
+                <div class="progress-bar rounded-full"></div>
+                <div class="relative">
+                    <!-- Timeline Item 1 -->
+                    <div class="mb-12 sm:w-1/2 sm:pr-6 timeline-item left">
+                        <div class="absolute w-4 h-4 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full left-[-8px] mt-3 z-10 animate-pulse"></div>
+                        <div class="bg-gradient-to-br from-gray-700 to-gray-800 p-6 rounded-xl card-glow flex items-start transform transition-all duration-500 hover:scale-105">
+                            <div class="timeline-icon mr-4 shadow-md">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl md:text-2xl font-bold mb-2 gradient-text">Start In IDN Boarding School</h3>
+                                <p class="text-gray-200 text-sm md:text-base mb-2">Senior High School | July 2024 </p>
+                                <p class="text-gray-300 text-sm md:text-base leading-relaxed">Learning the Beginnings of a Web Developer Starting with HTML and CSS, And Learn Basic Design with Figma or Canva</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Timeline Item 2 -->
+                    <div class="mb-12 sm:w-1/2 sm:ml-auto sm:pl-6 timeline-item right">
+                        <div class="absolute w-4 h-4 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full left-[-8px] mt-3 z-10 animate-pulse"></div>
+                        <div class="bg-gradient-to-br from-gray-700 to-gray-800 p-6 rounded-xl card-glow flex items-start transform transition-all duration-500 hover:scale-105">
+                            <div class="timeline-icon mr-4 shadow-md">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl md:text-2xl font-bold mb-2 gradient-text">First Time Porject Laravel </h3>
+                                <p class="text-gray-200 text-sm md:text-base mb-2">October 2024</p>
+                                <p class="text-gray-300 text-sm md:text-base leading-relaxed">Completed my first CRUD application project using the Laravel framework. This project introduced me to the MVC concept, user authentication, and simple data management. I also began to understand the importance of clean and efficient code structure.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Timeline Item 3 -->
+                    <div class="mb-12 sm:w-1/2 sm:pr-6 timeline-item left">
+                        <div class="absolute w-4 h-4 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full left-[-8px] mt-3 z-10 animate-pulse"></div>
+                        <div class="bg-gradient-to-br from-gray-700 to-gray-800 p-6 rounded-xl card-glow flex items-start transform transition-all duration-500 hover:scale-105">
+                            <div class="timeline-icon mr-4 shadow-md">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl md:text-2xl font-bold mb-2 gradient-text">IDN Tanggung Program</h3>
+                                <p class="text-gray-200 text-sm md:text-base mb-2">January 2025</p>
+                                <p class="text-gray-300 text-sm md:text-base leading-relaxed">Participating in the IDN Tangguh program, which focuses on leadership development and mental resilience. This program has equipped me with essential skills in overcoming challenges, collaborating effectively within teams, and managing projects with tight deadlines, significantly contributing to the success of my IT projects.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Timeline Item 4 -->
+                    <div class="mb-12 sm:w-1/2 sm:ml-auto sm:pl-6 timeline-item right">
+                        <div class="absolute w-4 h-4 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full left-[-8px] mt-3 z-10 animate-pulse"></div>
+                        <div class="bg-gradient-to-br from-gray-700 to-gray-800 p-6 rounded-xl card-glow flex items-start transform transition-all duration-500 hover:scale-105">
+                            <div class="timeline-icon mr-4 shadow-md">
+                                <i class="fas fa-university"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl md:text-2xl font-bold mb-2 gradient-text">IDN Probono Project</h3>
+                                <p class="text-gray-200 text-sm md:text-base mb-2">Mei 2025</p>
+                                <p class="text-gray-300 text-sm md:text-base leading-relaxed">Joined the IDN Probono Project, where I developed a web application for a nonprofit organization. The project involved complex authentication, role management using Spatie, and responsive frontend design with Laravel Blade, enhancing my full-stack skills.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+   <section id="about" class="py-24 bg-gradient-to-b from-gray-900 to-gray-800 relative overflow-hidden">
+    <div class="container mx-auto px-4 sm:px-6 relative z-10">
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-16 text-center gradient-text animate__animated animate__zoomIn">About Me</h2>
+        <div class="max-w-5xl mx-auto">
+            <!-- Background Particle Canvas -->
+            <div id="about-particles" class="absolute inset-0 z-0 opacity-40"></div>
+
+            <!-- Foto Profil -->
+            <div class="flex justify-center mb-16 relative">
+                <div class="profile-container w-64 h-64 sm:w-80 sm:h-80 relative group">
+                    <div class="w-full h-full rounded-full overflow-hidden border-6 border-gradient-to-r from-blue-500 to-cyan-400 shadow-2xl transform transition-all duration-1000 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(78,205,196,0.7)]">
+                        <img src="Screenshot 2025-06-04 at 14.28.06.png" alt="Foto Profil" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-115 group-hover:rotate-6">
+                    </div>
+                    <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-10 py-4 rounded-full text-lg font-bold shadow-xl transition-all duration-500 group-hover:shadow-[0_0_20px_rgba(78,205,196,0.6)] animate-bounce-vivid">
+                        Web Developer
+                    </div>
+                    <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500/30 to-cyan-400/30 animate-pulse-vivid z-[-1]"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+                <div class="relative bg-gradient-to-br from-gray-700/90 to-gray-800/90 p-12 rounded-3xl card-glow backdrop-blur-md transform transition-all duration-700 hover:scale-105 hover:shadow-[0_0_30px_rgba(78,205,196,0.5)] about-card">
+                    <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-t-3xl animate-glow-bar"></div>
+                    <h3 class="text-2xl md:text-3xl font-extrabold mb-4 gradient-text">Who Am I?</h3>
+                    <p class="text-gray-100 text-base md:text-lg leading-relaxed font-light">
+                        Mohammad Ghifari Atallah, an RPL student at IDN Boarding School, South Tangerang, Banten. Skilled in HTML, CSS, JavaScript, PHP, and Laravel, focusing on web and backend development. Currently building a full-featured app with Laravel Blade and creating HTML/CSS guides for beginners. Active in IDN Tangguh, IDN Goes To Society, and IDN Probono Project. Aspires to be a professional full-stack developer.
+
+   
+                    </p>
+                </div>
+                <div class="relative bg-gradient-to-br from-gray-700/90 to-gray-800/90 p-12 rounded-3xl card-glow backdrop-blur-md transform transition-all duration-700 hover:scale-105 hover:shadow-[0_0_30px_rgba(78,205,196,0.5)] about-card">
+                    <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-t-3xl animate-glow-bar"></div>
+                    <h3 class="text-2xl md:text-3xl font-extrabold mb-4 gradient-text">Vision & Mission</h3>
+                    <p class="text-gray-100 text-base md:text-lg leading-relaxed font-light">
+                        My vision is to create digital solutions that are not only functional but also deliver captivating user experiences. I believe technology should be accessible and add value to everyday life.
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 mb-16">
+                <div class="relative bg-gradient-to-br from-gray-700/90 to-gray-800/90 p-10 rounded-3xl card-glow backdrop-blur-md transform transition-all duration-700 hover:scale-110 hover:shadow-[0_0_30px_rgba(78,205,196,0.5)] skill-card">
+                    <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-t-3xl animate-glow-bar"></div>
+                    <div class="text-6xl mb-6 text-blue-400 transform transition-transform duration-500 hover:scale-110 hover:rotate-15">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <h3 class="text-xl md:text-2xl font-extrabold mb-3 gradient-text">Web Development</h3>
+                    <p class="text-gray-100 text-sm md:text-base font-light">HTML, CSS, JavaScript, Tailwind CSS, Laravel, PHP</p>
+                </div>
+                <div class="relative bg-gradient-to-br from-gray-700/90 to-gray-800/90 p-10 rounded-3xl card-glow backdrop-blur-md transform transition-all duration-700 hover:scale-110 hover:shadow-[0_0_30px_rgba(78,205,196,0.5)] skill-card">
+                    <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-t-3xl animate-glow-bar"></div>
+                    <div class="text-6xl mb-6 text-green-400 transform transition-transform duration-500 hover:scale-110 hover:rotate-15">
+                        <i class="fas fa-paint-brush"></i>
+                    </div>
+                    <h3 class="text-xl md:text-2xl font-extrabold mb-3 gradient-text">UI/UX Design</h3>
+                    <p class="text-gray-100 text-sm md:text-base font-light">Figma, Adobe Photoshop, Adobe Illustrator</p>
+                </div>
+                <div class="relative bg-gradient-to-br from-gray-700/90 to-gray-800/90 p-10 rounded-3xl card-glow backdrop-blur-md transform transition-all duration-700 hover:scale-110 hover:shadow-[0_0_30px_rgba(78,205,196,0.5)] skill-card">
+                    <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-t-3xl animate-glow-bar"></div>
+                    <div class="text-6xl mb-6 text-purple-400 transform transition-transform duration-500 hover:scale-110 hover:rotate-15">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3 class="text-xl md:text-2xl font-extrabold mb-3 gradient-text">Mobile Development</h3>
+                    <p class="text-gray-100 text-sm md:text-base font-light">Android Studio, Flutter</p>
+                </div>
+            </div>
+
+            <div class="mt-16 text-center">
+                <h3 class="text-2xl md:text-3xl font-extrabold mb-8 gradient-text animate__animated animate__fadeIn">Hobbies & Interests</h3>
+                <div class="flex flex-wrap justify-center gap-8">
+                    <span class="hobby-item px-8 py-4 bg-gradient-to-br from-gray-700/90 to-gray-800/90 rounded-full text-base md:text-lg font-medium shadow-xl backdrop-blur-md transform transition-all duration-500 hover:scale-115 hover:bg-gradient-to-r hover:from-blue-500 hover:to-cyan-400 hover:text-white hover:shadow-[0_0_20px_rgba(78,205,196,0.6)] hover:rotate-6">Photography</span>
+                    <span class="hobby-item px-8 py-4 bg-gradient-to-br from-gray-700/90 to-gray-800/90 rounded-full text-base md:text-lg font-medium shadow-xl backdrop-blur-md transform transition-all duration-500 hover:scale-115 hover:bg-gradient-to-r hover:from-blue-500 hover:to-cyan-400 hover:text-white hover:shadow-[0_0_20px_rgba(78,205,196,0.6)] hover:rotate-6">Travel</span>
+                    <span class="hobby-item px-8 py-4 bg-gradient-to-br from-gray-700/90 to-gray-800/90 rounded-full text-base md:text-lg font-medium shadow-xl backdrop-blur-md transform transition-all duration-500 hover:scale-115 hover:bg-gradient-to-r hover:from-blue-500 hover:to-cyan-400 hover:text-white hover:shadow-[0_0_20px_rgba(78,205,196,0.6)] hover:rotate-6">Music</span>
+                    <span class="hobby-item px-8 py-4 bg-gradient-to-br from-gray-700/90 to-gray-800/90 rounded-full text-base md:text-lg font-medium shadow-xl backdrop-blur-md transform transition-all duration-500 hover:scale-115 hover:bg-gradient-to-r hover:from-blue-500 hover:to-cyan-400 hover:text-white hover:shadow-[0_0_20px_rgba(78,205,196,0.6)] hover:rotate-6">Gaming</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .animate-pulse-vivid {
+        animation: pulse-vivid 2s ease-in-out infinite;
+    }
+    @keyframes pulse-vivid {
+        0% { opacity: 0.4; transform: scale(1); }
+        50% { opacity: 0.7; transform: scale(1.15); }
+        100% { opacity: 0.4; transform: scale(1); }
+    }
+    .animate-bounce-vivid {
+        animation: bounce-vivid 1.5s ease-in-out infinite;
+    }
+    @keyframes bounce-vivid {
+        0%, 100% { transform: translate(-50%, 0); }
+        50% { transform: translate(-50%, -15px); }
+    }
+    .animate-glow-bar {
+        animation: glow-bar 3s ease-in-out infinite;
+    }
+    @keyframes glow-bar {
+        0% { transform: scaleX(1); opacity: 1; }
+        50% { transform: scaleX(1.1); opacity: 0.7; }
+        100% { transform: scaleX(1); opacity: 1; }
+    }
+</style>
+
+<script>
+    // Particle system for About section background
+    const aboutScene = new THREE.Scene();
+    const aboutCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const aboutRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const aboutContainer = document.getElementById('about-particles');
+
+    aboutRenderer.setSize(window.innerWidth, window.innerHeight);
+    aboutRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    aboutContainer.appendChild(aboutRenderer.domElement);
+
+    const aboutParticlesGeometry = new THREE.BufferGeometry();
+    const aboutParticlesCount = 3000;
+    const aboutPosArray = new Float32Array(aboutParticlesCount * 3);
+    const aboutColors = new Float32Array(aboutParticlesCount * 3);
+
+    for (let i = 0; i < aboutParticlesCount * 3; i += 3) {
+        aboutPosArray[i] = (Math.random() - 0.5) * 12;
+        aboutPosArray[i + 1] = (Math.random() - 0.5) * 12;
+        aboutPosArray[i + 2] = (Math.random() - 0.5) * 12;
+        aboutColors[i] = Math.random() * 0.4 + 0.2; // Vary red for gradient effect
+        aboutColors[i + 1] = Math.random() * 0.4 + 0.6; // Vary green
+        aboutColors[i + 2] = 0.77; // Fixed blue for consistency
+    }
+
+    aboutParticlesGeometry.setAttribute('position', new THREE.BufferAttribute(aboutPosArray, 3));
+    aboutParticlesGeometry.setAttribute('color', new THREE.BufferAttribute(aboutColors, 3));
+
+    const aboutParticlesMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+            uTime: { value: 0 },
+            uSize: { value: 5 * aboutRenderer.getPixelRatio() }
+        },
+        vertexShader: `
+            attribute vec3 color;
+            varying vec3 vColor;
+            uniform float uTime;
+            void main() {
+                vColor = color;
+                vec3 pos = position;
+                pos.y += sin(pos.x + uTime * 0.8) * 0.4;
+                pos.x += cos(pos.y + uTime * 0.6) * 0.3;
+                vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+                gl_PointSize = 5.0 * (1.0 / -mvPosition.z);
+                gl_Position = projectionMatrix * mvPosition;
+            }
+        `,
+        fragmentShader: `
+            varying vec3 vColor;
+            void main() {
+                float strength = distance(gl_PointCoord, vec2(0.5));
+                strength = 1.0 - strength;
+                strength = pow(strength, 4.0);
+                gl_FragColor = vec4(vColor, strength * 0.7);
+            }
+        `,
+        transparent: true,
+        blending: THREE.AdditiveBlending
+    });
+
+    const aboutParticles = new THREE.Points(aboutParticlesGeometry, aboutParticlesMaterial);
+    aboutScene.add(aboutParticles);
+
+    aboutCamera.position.z = 6;
+
+    const aboutClock = new THREE.Clock();
+    function animateAboutParticles() {
+        requestAnimationFrame(animateAboutParticles);
+        const elapsedTime = aboutClock.getElapsedTime();
+        aboutParticlesMaterial.uniforms.uTime.value = elapsedTime;
+        aboutParticles.rotation.y = elapsedTime * 0.08;
+        aboutParticles.rotation.x = elapsedTime * 0.03;
+        aboutRenderer.render(aboutScene, aboutCamera);
+    }
+
+    window.addEventListener('resize', () => {
+        aboutCamera.aspect = window.innerWidth / window.innerHeight;
+        aboutCamera.updateProjectionMatrix();
+        aboutRenderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Enhanced animations for About section
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Profile photo animation with dramatic entrance
+    gsap.from('.profile-container', {
+        scrollTrigger: {
+            trigger: '.profile-container',
+            start: 'top 85%',
+            toggleActions: 'play none none none'
+        },
+        opacity: 0,
+        scale: 0.3,
+        rotation: 720,
+        y: 100,
+        duration: 2,
+        ease: 'elastic.out(1, 0.4)'
+    });
+
+    // Staggered animation for about cards with 3D flip
+    gsap.utils.toArray('.about-card').forEach((card, i) => {
+        gsap.fromTo(card, {
+            opacity: 0,
+            y: 80,
+            rotationX: -90,
+            scale: 0.7
+        }, {
+            scrollTrigger: {
+                trigger: card,
+                start: 'top 80%',
+                toggleActions: 'play none none none'
+            },
+            opacity: 1,
+            y: 0,
+            rotationX: 0,
+            scale: 1,
+            duration: 1.5,
+            ease: 'back.out(2)',
+            delay: i * 0.4
+        });
+    });
+
+    // Staggered animation for skill cards with vibrant flip and glow
+    gsap.utils.toArray('.skill-card').forEach((card, i) => {
+        gsap.fromTo(card, {
+            opacity: 0,
+            scale: 0.6,
+            rotationY: 180,
+            y: 50
+        }, {
+            scrollTrigger: {
+                trigger: card,
+                start: 'top 80%',
+                toggleActions: 'play none none none'
+            },
+            opacity: 1,
+            scale: 1,
+            rotationY: 0,
+            y: 0,
+            duration: 1.6,
+            ease: 'back.out(2.5)',
+            delay: i * 0.3
+        });
+    });
+
+    // Enhanced hobby items animation with spin and bounce
+    gsap.utils.toArray('.hobby-item').forEach((item, i) => {
+        gsap.fromTo(item, {
+            opacity: 0,
+            y: 50,
+            rotation: 45,
+            scale: 0.8
+        }, {
+            scrollTrigger: {
+                trigger: item,
+                start: 'top 90%',
+                toggleActions: 'play none none none'
+            },
+            opacity: 1,
+            y: 0,
+            rotation: 0,
+            scale: 1,
+            duration: 1,
+            ease: 'elastic.out(1, 0.6)',
+            delay: i * 0.2
+        });
+    });
+
+    animateAboutParticles();
+</script>
+
+<style>
+    .animate-pulse-slow {
+        animation: pulse-slow 3s ease-in-out infinite;
+    }
+    @keyframes pulse-slow {
+        0% { opacity: 0.3; transform: scale(1); }
+        50% { opacity: 0.6; transform: scale(1.1); }
+        100% { opacity: 0.3; transform: scale(1); }
+    }
+    .animate-bounce-slow {
+        animation: bounce-slow 2s ease-in-out infinite;
+    }
+    @keyframes bounce-slow {
+        0%, 100% { transform: translate(-50%, 0); }
+        50% { transform: translate(-50%, -10px); }
+    }
+</style>
+
+<script>
+    function animateAboutParticles() {
+        requestAnimationFrame(animateAboutParticles);
+        const elapsedTime = aboutClock.getElapsedTime();
+        aboutParticlesMaterial.uniforms.uTime.value = elapsedTime;
+        aboutParticles.rotation.y = elapsedTime * 0.05;
+        aboutRenderer.render(aboutScene, aboutCamera);
+    }
+
+    window.addEventListener('resize', () => {
+        aboutCamera.aspect = window.innerWidth / window.innerHeight;
+        aboutCamera.updateProjectionMatrix();
+        aboutRenderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Enhanced animations for About section
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Profile photo animation with rotation and scale
+    gsap.from('.profile-container', {
+        scrollTrigger: {
+            trigger: '.profile-container',
+            start: 'top 80%',
+            toggleActions: 'play none none none'
+        },
+        opacity: 0,
+        scale: 0.5,
+        rotation: 360,
+        duration: 1.8,
+        ease: 'elastic.out(1, 0.5)'
+    });
+
+    // Staggered animation for about cards
+    gsap.utils.toArray('.about-card').forEach((card, i) => {
+        gsap.fromTo(card, {
+            opacity: 0,
+            y: 50,
+            rotationX: -10
+        }, {
+            scrollTrigger: {
+                trigger: card,
+                start: 'top 85%',
+                toggleActions: 'play none none none'
+            },
+            opacity: 1,
+            y: 0,
+            rotationX: 0,
+            duration: 1.2,
+            ease: 'power4.out',
+            delay: i * 0.3
+        });
+    });
+
+    // Staggered animation for skill cards with flip effect
+    gsap.utils.toArray('.skill-card').forEach((card, i) => {
+        gsap.fromTo(card, {
+            opacity: 0,
+            scale: 0.8,
+            rotationY: 90
+        }, {
+            scrollTrigger: {
+                trigger: card,
+                start: 'top 85%',
+                toggleActions: 'play none none none'
+            },
+            opacity: 1,
+            scale: 1,
+            rotationY: 0,
+            duration: 1.4,
+            ease: 'back.out(1.7)',
+            delay: i * 0.2
+        });
+    });
+
+    // Enhanced hobby items animation with rotation
+    gsap.utils.toArray('.hobby-item').forEach((item, i) => {
+        gsap.fromTo(item, {
+            opacity: 0,
+            y: 30,
+            rotation: 10
+        }, {
+            scrollTrigger: {
+                trigger: item,
+                start: 'top 90%',
+                toggleActions: 'play none none none'
+            },
+            opacity: 1,
+            y: 0,
+            rotation: 0,
+            duration: 0.8,
+            ease: 'power2.out',
+            delay: i * 0.15
+        });
+    });
+
+    // Enhanced animations for Contact section
+gsap.registerPlugin(ScrollTrigger);
+
+gsap.from('.contact-text', {
+    scrollTrigger: {
+        trigger: '#contact',
+        start: 'top 80%',
+        toggleActions: 'play none none none'
+    },
+    opacity: 0,
+    y: 50,
+    duration: 1.2,
+    ease: 'power3.out'
+});
+
+gsap.from('.social-icons a', {
+    scrollTrigger: {
+        trigger: '.social-icons',
+        start: 'top 85%',
+        toggleActions: 'play none none none'
+    },
+    opacity: 0,
+    y: 20,
+    stagger: 0.2,
+    duration: 1,
+    ease: 'back.out(1.7)'
+});
+
+gsap.from('.contact-info p', {
+    scrollTrigger: {
+        trigger: '.contact-info',
+        start: 'top 85%',
+        toggleActions: 'play none none none'
+    },
+    opacity: 0,
+    y: 30,
+    stagger: 0.2,
+    duration: 1,
+    ease: 'power2.out'
+});
+
+gsap.from('#contact input, #contact textarea, #contact button', {
+    scrollTrigger: {
+        trigger: '.max-w-lg',
+        start: 'top 85%',
+        toggleActions: 'play none none none'
+    },
+    opacity: 0,
+    y: 40,
+    stagger: 0.2,
+    duration: 1.2,
+    ease: 'elastic.out(1, 0.5)'
+});
+
+    animateAboutParticles();
+</script>
+<style>
+    .animate-pulse-slow {
+        animation: pulse-slow 3s ease-in-out infinite;
+    }
+    @keyframes pulse-slow {
+        0% { opacity: 0.3; transform: scale(1); }
+        50% { opacity: 0.6; transform: scale(1.1); }
+        100% { opacity: 0.3; transform: scale(1); }
+    }
+    
+</style>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-24 bg-gray-800 relative overflow-hidden">
+    <div class="container mx-auto px-4 sm:px-6 z-10">
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-16 text-center gradient-text animate__animated animate__zoomIn">Get in Touch</h2>
+        <div class="text-center mb-12 relative">
+            <div class="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-3xl blur-xl animate-pulse-slow opacity-50"></div>
+            <p class="text-lg sm:text-xl text-gray-200 mb-6 relative z-10">Saya terbuka untuk proyek baru, kolaborasi, atau hanya sekadar mengobrol tentang teknologi dan kreativitas. Silakan hubungi saya melalui formulir ini atau melalui media sosial.</p>
+            <div class="flex justify-center space-x-6 mt-6 relative z-10">
+                <a href="https://github.com/GIP-SIGMA" target="_blank" class="text-gray-400 hover:text-blue-400 transition-all duration-300 transform hover:scale-125 animate__animated animate__fadeIn animate__delay-0.2s"><i class="fab fa-github text-2xl"></i></a>
+                <a href="https://linkedin.com" target="_blank" class="text-gray-400 hover:text-blue-400 transition-all duration-300 transform hover:scale-125 animate__animated animate__fadeIn animate__delay-0.4s"><i class="fab fa-linkedin text-2xl"></i></a>
+                <a href="https://www.instagram.com/ghiffariath" target="_blank" class="text-gray-400 hover:text-blue-400 transition-all duration-300 transform hover:scale-125 animate__animated animate__fadeIn animate__delay-0.6s"><i class="fab fa-instagram text-2xl"></i></a>
+            </div>
+            <div class="mt-6 space-y-2 relative z-10">
+                <p class="text-sm sm:text-base text-gray-300 flex items-center justify-center space-x-2 animate__animated animate__fadeInUp animate__delay-0.8s">
+                    <i class="fas fa-envelope"></i><span>atalahghifari333@gmail.com</span>
+                </p>
+                <p class="text-sm sm:text-base text-gray-300 flex items-center justify-center space-x-2 animate__animated animate__fadeInUp animate__delay-1s">
+                    <i class="fas fa-phone"></i><span>+62 877-3454-4536</span>
+                </p>
+            </div>
+        </div>
+        <div class="max-w-lg mx-auto relative z-10">
+            <div class="space-y-6">
+                <div class="relative">
+                    <input type="text" placeholder="Your Name" class="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-gray-700 to-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base transition-all duration-300 animate__animated animate__fadeIn animate__delay-1.2s">
+                    <i class="fas fa-user absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                </div>
+                <div class="relative">
+                    <input type="email" placeholder="Your Email" class="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-gray-700 to-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base transition-all duration-300 animate__animated animate__fadeIn animate__delay-1.4s">
+                    <i class="fas fa-envelope absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                </div>
+                <div class="relative">
+                    <textarea placeholder="Your Message" rows="5" class="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-gray-700 to-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base transition-all duration-300 animate__animated animate__fadeIn animate__delay-1.6s"></textarea>
+                    <i class="fas fa-comment absolute right-4 top-4 text-gray-400"></i>
+                </div>
+                <button class="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white px-8 py-3 rounded-lg transition text-sm md:text-base font-semibold shadow-lg transform hover:scale-105 animate__animated animate__fadeIn animate__delay-1.8s">
+                    Send Message
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <script>
+        
+        // Three.js Scene Setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        const container = document.getElementById('canvas-container');
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        // Particle system with custom shader
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 10000;
+        const posArray = new Float32Array(particlesCount * 3);
+        const colors = new Float32Array(particlesCount * 3);
+
+        for(let i = 0; i < particlesCount * 3; i += 3) {
+            const r = (Math.random() - 0.5) * 8;
+            posArray[i] = r;
+            posArray[i + 1] = (Math.random() - 0.5) * 8;
+            posArray[i + 2] = (Math.random() - 0.5) * 8;
+            
+            colors[i] = 0.31 + Math.random() * 0.2;
+            colors[i + 1] = 0.8 + Math.random() * 0.2;
+            colors[i + 2] = 0.77;
+        }
+
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const particlesMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                uTime: { value: 0 },
+                uSize: { value: 6 * renderer.getPixelRatio() }
+            },
+            vertexShader: `
+                attribute vec3 color;
+                varying vec3 vColor;
+                uniform float uTime;
+                void main() {
+                    vColor = color;
+                    vec3 pos = position;
+                    pos.z += sin(pos.x + uTime) * 0.5;
+                    vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+                    gl_PointSize = 6.0 * (1.0 / -mvPosition.z);
+                    gl_Position = projectionMatrix * mvPosition;
+                }
+            `,
+            fragmentShader: `
+                varying vec3 vColor;
+                void main() {
+                    float strength = distance(gl_PointCoord, vec2(0.5));
+                    strength = 1.0 - strength;
+                    strength = pow(strength, 3.0);
+                    gl_FragColor = vec4(vColor, strength * 0.8);
+                }
+            `,
+            transparent: true,
+            blending: THREE.AdditiveBlending
+        });
+
+        const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particles);
+
+        camera.position.z = 4;
+
+        // Animation
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            const elapsedTime = clock.getElapsedTime();
+            particlesMaterial.uniforms.uTime.value = elapsedTime;
+            particles.rotation.y = elapsedTime * 0.1;
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Parallax effect
+        window.addEventListener('scroll', () => {
+            document.querySelectorAll('.parallax').forEach(element => {
+                const speed = 0.2;
+                const yPos = -(window.pageYOffset * speed);
+                element.style.transform = `translateY(${yPos}px)`;
+            });
+        });
+
+        // Timeline animations
+        gsap.registerPlugin(ScrollTrigger);
+        gsap.utils.toArray('.timeline-item').forEach((item, i) => {
+            gsap.fromTo(item, {
+                opacity: 0,
+                x: item.classList.contains('left') ? -50 : 50,
+                scale: 0.9
+            }, {
+                scrollTrigger: {
+                    trigger: item,
+                    start: 'top 80%',
+                    toggleActions: 'play none none none'
+                },
+                opacity: 1,
+                x: 0,
+                scale: 1,
+                duration: 1.2,
+                ease: 'power4.out',
+                delay: i * 0.3
+            });
+        });
+
+        // Progress bar animation
+        gsap.to('.progress-bar', {
+            scrollTrigger: {
+                trigger: '#experience',
+                start: 'top 80%',
+                end: 'bottom 20%',
+                scrub: 0.5
+            },
+            height: '100%',
+            ease: 'none'
+        });
+
+        // Card hover animation
+        gsap.utils.toArray('.card-glow').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                gsap.to(card, {
+                    y: -10,
+                    scale: 1.05,
+                    duration: 0.4,
+                    ease: 'power3.out'
+                });
+            });
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card, {
+                    y: 0,
+                    scale: 1,
+                    duration: 0.4,
+                    ease: 'power3.out'
+                });
+            });
+        });
+
+        // Hobby items animation
+        gsap.utils.toArray('.hobby-item').forEach((item, i) => {
+            gsap.fromTo(item, {
+                opacity: 0,
+                y: 20
+            }, {
+                scrollTrigger: {
+                    trigger: item,
+                    start: 'top 90%',
+                    toggleActions: 'play none none none'
+                },
+                opacity: 1,
+                y: 0,
+                duration: 0.8,
+                ease: 'power2.out',
+                delay: i * 0.1
+            });
+        });
+
+        // Profile photo animation
+        gsap.from('.profile-container', {
+            scrollTrigger: {
+                trigger: '.profile-container',
+                start: 'top 80%',
+                toggleActions: 'play none none none'
+            },
+            opacity: 0,
+            scale: 0.8,
+            duration: 1.5,
+            ease: 'elastic.out(1, 0.5)'
+        });
+
+        // Loading screen
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                gsap.to('#loading-screen', {
+                    opacity: 0,
+                    duration: 0.8,
+                    ease: 'power2.out',
+                    onComplete: () => {
+                        document.getElementById('loading-screen').style.display = 'none';
+                    }
+                });
+            }, 1000);
+        });
+
+        animate();
+    </script>
